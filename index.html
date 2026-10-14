@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glossario Tecnico Dev</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --accent: #58a6ff;
+      --accent-hover: #1f6feb;
+      --tag-bg: #21262d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    h1 { color: #f0f6fc; font-size: 1.8rem; margin-bottom: 8px; }
+    p.subtitle { color: #8b949e; font-size: 0.95rem; }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+    }
+    .search-box input:focus { border-color: var(--accent); }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+    .filter-btn {
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+    .filter-btn.active {
+      background: var(--accent-hover);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .add-form {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .add-form input, .add-form textarea, .add-form select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+    }
+    .add-btn {
+      background: #238636;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .add-btn:hover { background: #2ea043; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .card:hover { border-color: #8b949e; transform: translateY(-2px); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .term-title { font-size: 1.2rem; color: #f0f6fc; font-weight: 600; }
+    .badge {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      color: var(--accent);
+    }
+
+    .card-desc { font-size: 0.9rem; line-height: 1.4; color: #8b949e; margin-bottom: 12px; }
+    .card-example {
+      background: var(--bg);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      border-left: 3px solid var(--accent);
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .btn-icon {
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .btn-icon:hover { background: var(--border); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📚 Glossario Tecnico Dev</h1>
+    <p class="subtitle">Il tuo dizionario personale dei termini di programmazione e GitHub</p>
+  </header>
+
+  <div class="controls">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Cerca termine o parola chiave..." oninput="filterCards()">
+    </div>
+    <div class="filters" id="categoryFilters">
+      <button class="filter-btn active" onclick="setCategory('Tutti', this)">Tutti</button>
+      <button class="filter-btn" onclick="setCategory('GitHub', this)">GitHub</button>
+      <button class="filter-btn" onclick="setCategory('Web API', this)">Web API</button>
+      <button class="filter-btn" onclick="setCategory('Storage', this)">Storage</button>
+      <button class="filter-btn" onclick="setCategory('JavaScript', this)">JavaScript</button>
+    </div>
+  </div>
+
+  <!-- Form aggiunta rapida -->
+  <details class="add-form-container" style="margin-bottom: 20px;">
+    <summary style="cursor: pointer; color: var(--accent); margin-bottom: 10px;">➕ Aggiungi un nuovo termine</summary>
+    <div class="add-form">
+      <input type="text" id="newTerm" placeholder="Termine (es. LocalStorage)">
+      <select id="newCategory">
+        <option value="GitHub">GitHub</option>
+        <option value="Web API">Web API</option>
+        <option value="Storage">Storage</option>
+        <option value="JavaScript">JavaScript</option>
+        <option value="Architettura">Architettura</option>
+      </select>
+      <textarea id="newDesc" rows="2" placeholder="Spiegazione semplice e chiara..."></textarea>
+      <input type="text" id="newExample" placeholder="Esempio d'uso (opzionale)">
+      <button class="add-btn" onclick="addTerm()">Salva Termine</button>
+    </div>
+  </details>
+
+  <div class="grid" id="cardsGrid"></div>
+
+  <script>
+    const defaultTerms = [
+      {
+        term: "Repository (Repo)",
+        category: "GitHub",
+        desc: "La cartella digitale del progetto ospitata su GitHub. Contiene tutti i file, le immagini, il codice e lo storico delle modifiche.",
+        example: "Spostare il codice di VoceBook nella repo su GitHub."
+      },
+      {
+        term: "Commit",
+        category: "GitHub",
+        desc: "Un 'salvataggio' o istantanea del codice in un preciso momento, con un messaggio che spiega quali modifiche sono state fatte.",
+        example: "Commit: 'Aggiunti comandi vocali per salvare il segnalibro'."
+      },
+      {
+        term: "LocalStorage",
+        category: "Storage",
+        desc: "Uno spazio di memoria nel browser che permette di salvare dati direttamente sul dispositivo dell'utente, anche quando l'app viene chiusa o è offline.",
+        example: "Usato per salvare le note e i segnalibri degli ePub senza usare un server.",
+      },
+      {
+        term: "Web Speech API",
+        category: "Web API",
+        desc: "API nativa del browser che gestisce il riconoscimento vocale (SpeechRecognition) e la sintesi vocale (SpeechSynthesis) senza costi o librerie esterne.",
+        example: "Consente a VoceBook di ascoltare 'Salva questo punto' e rispondere a voce.",
+      },
+      {
+        term: "PWA (Progressive Web App)",
+        category: "Web API",
+        desc: "Un'applicazione web che funziona nel browser ma può essere installata sul tablet/telefono e usata offline come un'app nativa.",
+        example: "Le app web che sviluppiamo possono essere aperte come PWA offline."
+      },
+      {
+        term: "JSON",
+        category: "JavaScript",
+        desc: "Formato di testo leggero e ordinato per rappresentare dati (formato chiave-valore). È facilissimo da leggere sia per gli umani che per i computer.",
+        example: "{ 'capitolo': 3, 'timestamp': '10:45' }"
+      }
+    ];
+
+    let terms = JSON.parse(localStorage.getItem('dev_glossary_terms')) || defaultTerms;
+    let activeCategory = 'Tutti';
+
+    function saveTerms() {
+      localStorage.setItem('dev_glossary_terms', JSON.stringify(terms));
+    }
+
+    function renderCards() {
+      const grid = document.getElementById('cardsGrid');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      grid.innerHTML = '';
+
+      const filtered = terms.filter(item => {
+        const matchesCat = activeCategory === 'Tutti' || item.category === activeCategory;
+        const matchesSearch = item.term.toLowerCase().includes(search) || item.desc.toLowerCase().includes(search);
+        return matchesCat && matchesSearch;
+      });
+
+      filtered.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div>
+            <div class="card-header">
+              <span class="term-title">${item.term}</span>
+              <span class="badge">${item.category}</span>
+            </div>
+            <p class="card-desc">${item.desc}</p>
+            ${item.example ? `<div class="card-example">💡 <b>Esempio:</b> ${item.example}</div>` : ''}
+          </div>
+          <div class="card-actions">
+            <button class="btn-icon" onclick="speakTerm('${item.term}', '${item.desc}')">🔊 Ascolta</button>
+            <button class="btn-icon" onclick="copyObsidian('${item.term}', '${item.category}', '${item.desc}')">📋 Obsidian</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function setCategory(cat, btn) {
+      activeCategory = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCards();
+    }
+
+    function filterCards() {
+      renderCards();
+    }
+
+    function speakTerm(term, desc) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const text = `${term}. ${desc}`;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'it-IT';
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("Sintesi vocale non supportata nel tuo browser.");
+      }
+    }
+
+    function copyObsidian(term, category, desc) {
+      const md = `---
+tag: dev-glossario, ${category.toLowerCase().replace(' ', '-')}
+data: ${new Date().toISOString().split('T')[0]}
+---
+
+# ${term}
+**Categoria:** #${category}
+
+## Spiegazione
+${desc}
+`;
+      navigator.clipboard.writeText(md).then(() => {
+        alert(`Nota Markdown per "${term}" copiata negli appunti! Incollala in Obsidian.`);
+      });
+    }
+
+    function addTerm() {
+      const term = document.getElementById('newTerm').value.trim();
+      const category = document.getElementById('newCategory').value;
+      const desc = document.getElementById('newDesc').value.trim();
+      const example = document.getElementById('newExample').value.trim();
+
+      if (!term || !desc) {
+        alert("Inserisci almeno il termine e la spiegazione!");
+        return;
+      }
+
+      terms.unshift({ term, category, desc, example });
+      saveTerms();
+      renderCards();
+
+      document.getElementById('newTerm').value = '';
+      document.getElementById('newDesc').value = '';
+      document.getElementById('newExample').value = '';
+      alert("Termine aggiunto con successo!");
+    }
+
+    // Inizializza l'app
+    renderCards();
+  </script>
+</body>
+</html>
